@@ -18,7 +18,8 @@ namespace BranchTree
             if (IsReady == true)
             {
                 //SortTree(Text, Nodes);
-                SortTreeOther(Text, Nodes);
+                //SortTreeOther(Text, Nodes);
+                SortBranchTree(Text, Nodes);
                 ReadNodes(Nodes);
                 //GetNode("");
                 //GetNodes("");
@@ -47,6 +48,131 @@ namespace BranchTree
                 IsReady = true;
             }
         }
+
+        public static void SortBranchTree(List<string> text, List<Tree> nodes)
+        {
+            string tempName;
+            for (int i = 0; i < text.Count; i++)
+            {
+                tempName = text[i].Trim();
+
+                nodes.Add(new Tree(tempName));
+                nodes[i].Depth = NumberOfOcc(text[i], "\t");
+                if (NumberOfOcc(text[i], "\t") == 0)
+                {
+                    AddNode(nodes[i], null);
+                }
+                else if ((NumberOfOcc(text[i], "\t")) > (NumberOfOcc(text[i - 1], "\t")))
+                {
+                    AddNode(nodes[i], nodes[i - 1].id());
+
+                }
+                else if ((NumberOfOcc(text[i], "\t")) == (NumberOfOcc(text[i - 1], "\t")))
+                {
+                    AddNode(nodes[i], nodes[i - 1].Parent.id());
+                    if (nodes[i - 1].Parent == null)
+                    {
+                        continue;
+                    }
+                    nodes[i - 1].Parent.Children.Add(nodes[i]);
+                }
+                else if ((NumberOfOcc(text[i], "\t")) < (NumberOfOcc(text[i - 1], "\t")))
+                {
+                    int d = NumberOfOcc(text[i], "\t");
+                    int j = nodes.Count - 1;
+                    while (nodes[j].Depth <= d)
+                    {
+                        j--;
+                    }
+                    AddNode(nodes[i], nodes[j].id());
+
+                }
+            }
+        }
+
+        public static void AddNode(Tree tree, string parentID)
+        {
+            
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i].id() == parentID)
+                {
+                    tree.Parent = Nodes[i];
+                    tree.Depth = Nodes[i].Depth + 1;
+                    Nodes[i].Children.Add(tree);
+                    break;
+
+                }
+                
+            }
+
+        }
+
+        public static void AddNewNode(string name, string parentID)
+        {
+            Tree tree = new Tree(name.Trim());
+            AddNode(tree, parentID);
+        }
+
+        public static void DeleteNode(string id)
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i].id() == id)
+                {
+                    Nodes[i].Parent = null;
+                    foreach (Tree c in Nodes[i].Children)
+                    {
+                        c.Parent = null;
+                    }
+                    Nodes[i].Children = null;
+                    Nodes[i] = null;
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine(id + " not found.");
+                }
+            }
+        }
+
+        public static void MoveNode(string id, string parentID)
+        {
+            //reference from https://www.dotnetperls.com/list-find
+            Nodes.Find(tree => tree.id() == id).Parent = Nodes.Find(tree => tree.id() == parentID);
+            Nodes.Find(tree => tree.id() == id).Depth = Nodes.Find(tree => tree.id() == parentID).Depth + 1;
+            Nodes.Find(tree => tree.id() == parentID).Children.Add(Nodes.Find(tree => tree.id() == id));
+        }
+
+        public static Tree FindNode(string id)
+        {
+            return Nodes.Find(tree => tree.id() == id);
+        }
+
+        public static List<Tree> FindNodebyContent(string contentID)
+        {
+            List<Tree> GotNodes = new List<Tree>();
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i].Content() == contentID)
+                {
+                    GotNodes.Add(Nodes[i]);
+
+                }
+                else
+                {
+                    Console.WriteLine(contentID + " not found.");
+                }
+            }
+            for (int j = 0; j < GotNodes.Count; j++)
+            {
+                Console.WriteLine(GotNodes[j].Content());
+
+            }
+            return GotNodes;
+        }
+
+
 
         public static void SortTree(List<string> text, List<Tree> nodes)
         {
@@ -123,68 +249,6 @@ namespace BranchTree
 
             }
         }
-
-
-        //create a new instance?
-        public static void AddNode(Tree tree, string parentID)
-        {
-            
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                if (Nodes[i].id() == parentID)
-                {
-                    tree.Parent = Nodes[i];
-                    break;
-
-                }
-                else
-                {
-                    Console.WriteLine(parentID + " not found.");
-                }
-            }
-
-        }
-
-        public static void DeleteNode(string id)
-        {
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                if (Nodes[i].id() == id)
-                {
-                    Nodes[i].Parent = null;
-                    foreach (Tree c in Nodes[i].Children)
-                    {
-                        c.Parent = null;
-                    }
-                    Nodes[i].Children = null;
-                    Nodes[i] = null;
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine(id + " not found.");
-                }
-            }
-        }
-
-        public static void MoveNode(string id, string parentID)
-        {
-            //refence from https://www.dotnetperls.com/list-find
-            Nodes.Find(tree => tree.id() == id).Parent = Nodes.Find(tree => tree.id() == parentID);
-        }
-
-        public static Tree FindNode(string id)
-        {
-            return Nodes.Find(tree => tree.id() == id);
-        }
-
-        public static Tree FindNodebyContent(string contentID)
-        {
-            return Nodes.Find(tree => tree.Content() == contentID);
-        }
-
-
-
 
         public static Tree AddNodeAlt(Tree parent, string name)
         {
@@ -372,7 +436,7 @@ namespace BranchTree
         {
             string tabs;
             tabs = new string('\t', node.Depth);
-            Console.WriteLine(tabs + node.id()+", "+node.Content());
+            Console.WriteLine(tabs + node.Content()+", "+node.id());
             if (node.Children != null)
             {
                 foreach (Tree t in node.Children)
@@ -396,6 +460,32 @@ namespace BranchTree
             }
         }
 
+        public static void Inputs()
+        {
+            string inputString = "";
+            string[] inputArray = new string[4];
+            while(inputString !="Exit")
+            {
+                inputString = Console.ReadLine();
+                inputArray = inputString.Split(' ', ',');
+                if (inputArray[0]=="add")
+                {
+                    AddNewNode(inputArray[2], inputArray[1]);
+                }
+                else if (inputArray[0] == "remove")
+                {
+                    DeleteNode(inputArray[1]);
+                }
+                else if( inputArray[0] == "move")
+                {
+                    MoveNode(inputArray[1], inputArray[2]);
+                }
+                else
+                {
+
+                }
+            }
+        }
         
     }
 
