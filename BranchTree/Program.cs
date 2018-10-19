@@ -14,7 +14,7 @@ namespace BranchTree
         public static bool IsReady = false;
         static void Main(string[] args)
         {
-            LoadText(@"C:\workspace\treeTestData\people.txt", Text);
+            LoadText(@"C:\Users\Potato\Downloads\people.txt", Text);
             if (IsReady == true)
             {
                 //SortTree(Text, Nodes);
@@ -26,6 +26,7 @@ namespace BranchTree
                 //GetLeaves();
                 //GetInternalNodes();
                 //WriteOutlineFile(Nodes);
+                Inputs();
             }
 
             Console.ReadKey();
@@ -70,21 +71,20 @@ namespace BranchTree
                 else if ((NumberOfOcc(text[i], "\t")) == (NumberOfOcc(text[i - 1], "\t")))
                 {
                     AddNode(nodes[i], nodes[i - 1].Parent.id());
-                    if (nodes[i - 1].Parent == null)
-                    {
-                        continue;
-                    }
-                    nodes[i - 1].Parent.Children.Add(nodes[i]);
+
+
                 }
                 else if ((NumberOfOcc(text[i], "\t")) < (NumberOfOcc(text[i - 1], "\t")))
                 {
                     int d = NumberOfOcc(text[i], "\t");
-                    int j = nodes.Count - 1;
-                    while (nodes[j].Depth <= d)
+                    int j = nodes.Count - 2;
+                    while (nodes[j].Depth != d)
                     {
                         j--;
                     }
-                    AddNode(nodes[i], nodes[j].id());
+                    AddNode(nodes[i], nodes[j].Parent.id());
+
+
 
                 }
             }
@@ -111,37 +111,57 @@ namespace BranchTree
         public static void AddNewNode(string name, string parentID)
         {
             Tree tree = new Tree(name.Trim());
-            AddNode(tree, parentID);
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i].id() == parentID)
+                {
+                    tree.Parent = Nodes[i];
+                    tree.Depth = Nodes[i].Depth + 1;
+                    Nodes[i].Children.Add(tree);
+                    Nodes.Insert(i + 1, tree);
+                    break;
+
+                }
+                
+            }
+            
         }
 
         public static void DeleteNode(string id)
         {
             for (int i = 0; i < Nodes.Count; i++)
             {
-                if (Nodes[i].id() == id)
+                 if (Nodes[i].id() == id)
                 {
+                    if(Nodes[i].Parent != null)
+                    {
+                        Nodes[i].Parent.Children.Remove(Nodes[i]);
+                    }
+                    
                     Nodes[i].Parent = null;
                     foreach (Tree c in Nodes[i].Children)
                     {
                         c.Parent = null;
+                        Nodes.Remove(c);
                     }
-                    Nodes[i].Children = null;
-                    Nodes[i] = null;
+                    Nodes[i].Children.Clear();
+
+                    Nodes.RemoveAt(i);
                     break;
                 }
-                else
-                {
-                    Console.WriteLine(id + " not found.");
-                }
+                
             }
         }
 
         public static void MoveNode(string id, string parentID)
         {
             //reference from https://www.dotnetperls.com/list-find
+            Nodes.Find(tree => tree.id() == id).Parent.Children.Remove(Nodes.Find(tree => tree.id() == id));
             Nodes.Find(tree => tree.id() == id).Parent = Nodes.Find(tree => tree.id() == parentID);
-            Nodes.Find(tree => tree.id() == id).Depth = Nodes.Find(tree => tree.id() == parentID).Depth + 1;
+            SetDepth(id);
             Nodes.Find(tree => tree.id() == parentID).Children.Add(Nodes.Find(tree => tree.id() == id));
+
+
         }
 
         public static Tree FindNode(string id)
@@ -159,18 +179,13 @@ namespace BranchTree
                     GotNodes.Add(Nodes[i]);
 
                 }
-                else
-                {
-                    Console.WriteLine(contentID + " not found.");
-                }
+                
             }
-            for (int j = 0; j < GotNodes.Count; j++)
-            {
-                Console.WriteLine(GotNodes[j].Content());
-
-            }
+            
             return GotNodes;
         }
+
+        
 
 
 
@@ -365,34 +380,7 @@ namespace BranchTree
 
 
 
-        public static void WriteOutlineFile(List<Tree> nodes)
-        {
-            using (StreamWriter sw = new StreamWriter(@"C:\workspace\WriteHierachy.txt"))
-            {
-                //basic way
-                /*string tabs;
-                for (int i = 0; i < nodes.Count; i++)
-                {
-                    tabs = new string('\t', nodes[i].Depth);
-                    sw.WriteLine(tabs + nodes[i].Content());
-                }*/
-
-                //hierarichal way
-                List<Tree> Roots = new List<Tree>();
-                for (int i = 0; i < nodes.Count; i++)
-                {
-                    if (nodes[i].Depth == 0)
-                    {
-                        Roots.Add(nodes[i]);
-                    }
-                }
-                foreach (Tree t in Roots)
-                {
-                    WriteChildren(t, sw);
-                }
-
-            }
-        }
+        
 
         public static int NumberOfOcc(string text, string pattern)
         {
@@ -406,17 +394,21 @@ namespace BranchTree
             return count;
         }
 
+        public static void SetDepth(string id)
+        {
+            Nodes.Find(tree => tree.id() == id).Depth = Nodes.Find(tree => tree.id() == id).Parent.Depth + 1;
+            if(Nodes.Find(tree => tree.id() == id).Children != null)
+            {
+                foreach (Tree t in Nodes.Find(tree => tree.id() == id).Children)
+                {
+                    SetDepth(t.id());
+                }
+            }
+        }
+
         public static void ReadNodes(List<Tree> nodes)
         {
-            //basic way
-            /*string tabs;
-            for (int i=0; i<nodes.Count; i++)
-            {
-                tabs = new string('\t', nodes[i].Depth);
-                Console.WriteLine(tabs+nodes[i].Content());
-            }*/
 
-            //hierarchical way
             List<Tree> Roots = new List<Tree>();
             for (int i = 0; i < nodes.Count; i++)
             {
@@ -446,6 +438,35 @@ namespace BranchTree
             }
         }
 
+        public static void WriteOutlineFile(List<Tree> nodes)
+        {
+            using (StreamWriter sw = new StreamWriter(@"C:\workspace\WriteHierachy.txt"))
+            {
+                //basic way
+                /*string tabs;
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    tabs = new string('\t', nodes[i].Depth);
+                    sw.WriteLine(tabs + nodes[i].Content());
+                }*/
+
+                //hierarichal way
+                List<Tree> Roots = new List<Tree>();
+                for (int i = 0; i < nodes.Count; i++)
+                {
+                    if (nodes[i].Depth == 0)
+                    {
+                        Roots.Add(nodes[i]);
+                    }
+                }
+                foreach (Tree t in Roots)
+                {
+                    WriteChildren(t, sw);
+                }
+
+            }
+        }
+
         public static void WriteChildren(Tree node, StreamWriter sw)
         {
             string tabs;
@@ -464,26 +485,74 @@ namespace BranchTree
         {
             string inputString = "";
             string[] inputArray = new string[4];
-            while(inputString !="Exit")
+            while(true)
             {
                 inputString = Console.ReadLine();
                 inputArray = inputString.Split(' ', ',');
-                if (inputArray[0]=="add")
+                Console.WriteLine("\n");
+                if (inputArray[0].Equals("add", StringComparison.InvariantCultureIgnoreCase))
                 {
                     AddNewNode(inputArray[2], inputArray[1]);
+                    ReadNodes(Nodes);
                 }
-                else if (inputArray[0] == "remove")
+                else if (inputArray[0].Equals("remove", StringComparison.InvariantCultureIgnoreCase))
                 {
                     DeleteNode(inputArray[1]);
+                    ReadNodes(Nodes);
                 }
-                else if( inputArray[0] == "move")
+                else if (inputArray[0].Equals("move", StringComparison.InvariantCultureIgnoreCase))
                 {
                     MoveNode(inputArray[1], inputArray[2]);
+                    ReadNodes(Nodes);
+                }
+                else if (inputArray[0].Equals("get", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    
+                    if(inputArray.Length <= 1)
+                    {
+                        Console.WriteLine("Nothing to find. ");
+                        continue;
+                    }
+
+                    if (FindNode(inputArray[1]) != null)
+                    {
+                        Tree tempTree = FindNode(inputArray[1]);
+                        Console.WriteLine("Found:\n" + tempTree.Content() + ", " + tempTree.id());
+
+                    }
+                    else if (FindNodebyContent(inputArray[1]) != null)
+                    {
+                        List<Tree> tempTreeList = FindNodebyContent(inputArray[1]);
+                        if (tempTreeList.Any())
+                        {
+                            Console.WriteLine("Found: ");
+                            foreach (Tree t in tempTreeList)
+                            {
+                                Console.WriteLine(t.Content() + ", " + t.id());
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Not found.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine(inputArray[1] + " not found.");
+                    }
+
+                    
+                }
+                else if(inputArray[0].Equals("exit", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    Console.WriteLine("Exiting program.");
+                    break;
                 }
                 else
                 {
-
+                    Console.WriteLine("Please enter valid input");
                 }
+                
             }
         }
         
