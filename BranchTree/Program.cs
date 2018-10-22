@@ -15,7 +15,7 @@ namespace BranchTree
         public static bool IsReady = false;
         static void Main(string[] args)
         {
-            LoadText(@"C:\workspace\names.tab", Text);
+            LoadText(@"C:\workspace\names3.tab", Text);
             if (IsReady == true)
             {
 
@@ -177,7 +177,7 @@ namespace BranchTree
             List<Tree> GotNodes = new List<Tree>();
             for (int i = 0; i < Nodes.Count; i++)
             {
-                if (Nodes[i].Content() == contentID)
+                if (Nodes[i].Content().Equals(contentID, StringComparison.InvariantCultureIgnoreCase))
                 {
                     GotNodes.Add(Nodes[i]);
 
@@ -323,17 +323,23 @@ namespace BranchTree
 
         public static void Inputs()
         {
-            Console.WriteLine("\n---INPUTS--- \nadd parentID,nameOfNewNode \nremove nodeToRemoveID \nmove nodeToMoveID,newParentID \nget ID \nget name \nget leaves \nget internal \nwrite fileName \nexit");
             string inputString = "";
             string[] inputArray = new string[4];
             char[] c = new char[]{ ' ', ',' };
             while(true)
             {
-                inputString = Console.ReadLine();
+				Console.WriteLine("\n---INPUTS--- \nadd parentID,nameOfNewNode \nremove nodeToRemoveID \nmove nodeToMoveID,newParentID \nget ID \nget name \nget leaves \nget internal \nwrite fileName \nexit");
+				inputString = Console.ReadLine();
                 inputArray = inputString.Split(c, StringSplitOptions.RemoveEmptyEntries);
                 Console.WriteLine("\n");
 
-                if (inputArray[0].Equals("add", StringComparison.InvariantCultureIgnoreCase))
+				if (inputArray.Length <= 1 && !inputArray[0].Equals("exit", StringComparison.InvariantCultureIgnoreCase))
+				{
+					Console.WriteLine("Nothing to operate. ");
+					continue;
+				}
+
+				if (inputArray[0].Equals("add", StringComparison.InvariantCultureIgnoreCase))
                 {
                     AddNewNode(inputArray[2], inputArray[1]);
                     ReadNodes(Nodes);
@@ -351,11 +357,7 @@ namespace BranchTree
                 else if (inputArray[0].Equals("get", StringComparison.InvariantCultureIgnoreCase))
                 {
                     
-                    if(inputArray.Length <= 1)
-                    {
-                        Console.WriteLine("Nothing to find. ");
-                        continue;
-                    }
+                    
 
                     if (inputArray[1].Equals("leaves", StringComparison.InvariantCultureIgnoreCase))
                     {
