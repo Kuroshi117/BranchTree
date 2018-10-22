@@ -116,6 +116,14 @@ namespace BranchTree
                     break;
 
                 }
+				else if ( parentID=="null")
+				{
+					tree.Parent = null;
+					tree.Depth = 0;
+					Nodes.Add(tree);
+					break;
+
+				}
                 
             }
             
@@ -380,33 +388,36 @@ namespace BranchTree
                             Console.WriteLine("No internal nodes found.");
                         }
                     }
+					else
+					{
+						if (FindNode(inputArray[1]) != null)
+						{
+							Tree tempTree = FindNode(inputArray[1]);
+							Console.WriteLine("Found:\n" + tempTree.Content() + ", " + tempTree.id());
 
-                    if (FindNode(inputArray[1]) != null)
-                    {
-                        Tree tempTree = FindNode(inputArray[1]);
-                        Console.WriteLine("Found:\n" + tempTree.Content() + ", " + tempTree.id());
-
-                    }
-                    else if (FindNodebyContent(inputArray[1]) != null)
-                    {
-                        List<Tree> tempTreeList = FindNodebyContent(inputArray[1]);
-                        if (tempTreeList.Any())
-                        {
-                            Console.WriteLine("Found: ");
-                            foreach (Tree t in tempTreeList)
-                            {
-                                Console.WriteLine(t.Content() + ", " + t.id());
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Not found.");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(inputArray[1] + " not found.");
-                    }
+						}
+						else if (FindNodebyContent(inputArray[1]) != null)
+						{
+							List<Tree> tempTreeList = FindNodebyContent(inputArray[1]);
+							if (tempTreeList.Any())
+							{
+								Console.WriteLine("Found: ");
+								foreach (Tree t in tempTreeList)
+								{
+									Console.WriteLine(t.Content() + ", " + t.id());
+								}
+							}
+							else
+							{
+								Console.WriteLine("Not found.");
+							}
+						}
+						else
+						{
+							Console.WriteLine(inputArray[1] + " not found.");
+						}
+					}
+                    
 
                     
                 }
