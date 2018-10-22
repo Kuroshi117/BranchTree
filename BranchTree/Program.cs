@@ -1,4 +1,5 @@
-﻿using System;
+﻿//Phoebe Huang
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace BranchTree
         public static bool IsReady = false;
         static void Main(string[] args)
         {
-            LoadText(@"C:\workspace\treeTestData\people.txt", Text);
+            LoadText(@"C:\workspace\names.tab", Text);
             if (IsReady == true)
             {
 
@@ -322,7 +323,7 @@ namespace BranchTree
 
         public static void Inputs()
         {
-            Console.WriteLine("\n---INPUTS--- \nadd parentID,nameOfNewNode \nremove nodeToRemoveID \nmove nodeToMoveID,newParentID \nget ID \nget name \nget leaves \nget internal \nwrite fileName");
+            Console.WriteLine("\n---INPUTS--- \nadd parentID,nameOfNewNode \nremove nodeToRemoveID \nmove nodeToMoveID,newParentID \nget ID \nget name \nget leaves \nget internal \nwrite fileName \nexit");
             string inputString = "";
             string[] inputArray = new string[4];
             char[] c = new char[]{ ' ', ',' };
